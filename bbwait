@@ -1,0 +1,46 @@
+#!/bin/zsh -f
+# Purpose: Use BBEdit as your $EDITOR or $VISUAL, especially for visudo.
+# Install: This file should be installed as `/usr/local/bin/bbwait`
+#
+#	To use with `visudo` add the next line to /etc/sudoers file (without the '#'):
+# Defaults 	editor=/usr/local/bin/bbwait
+#
+# From:	Timothy J. Luoma
+# Mail:	luomat at gmail dot com
+# Date:	2013-05-13
+
+NAME="$0:t:r"
+
+	# this checkes to make sure that `bbedit` is found somewhere in the $PATH
+if ((! $+commands[bbedit] ))
+then
+
+		# if not, exit
+	echo "	$NAME: bbedit is required but not found in $PATH"
+	exit 1
+fi
+
+# if `bbedit` is found, invoke it in a way that will wait until the window is closed before continuing
+
+bbedit 	--language 'Unix Shell Script' \
+		--create-unix \
+		--separate-windows \
+		--resume \
+		--wait \
+		-- "$@"
+
+EXIT="$?"
+
+if [ "$EXIT" = "0" ]
+then
+		echo "	$NAME: bbedit exited successfully."
+		exit 0
+
+else
+		echo "	$NAME: bbedit exited uncleanly (\$EXIT = $EXIT)"
+
+		exit 1
+fi
+
+#
+#EOF
