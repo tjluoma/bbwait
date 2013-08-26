@@ -67,7 +67,58 @@ If you didn't install the Command Line Tools when you first installed BBEdit, yo
 
 If you're not sure if you installed them or not, just select the menu item, and it will tell you if they are already installed and up-to-date.
 
-## Other Editors ##
+## SSH (optional) ##
+
+BBEdit is great when you are logged in via the GUI, but what happens if you connected to your Mac via SSH?
+
+`bbwait` can help here too, but it requires that you add something like this to your shell initialization file (i.e. .zshrc or .bashrc):
+
+		PPID_NAME=$(/bin/ps -cp ${PPID} | awk -F' ' '/sshd/{print $NF}')
+
+		if [ "$PPID_NAME" = "sshd" ]
+		then
+			 SSH=yes
+		else
+			SSH=no
+		fi
+		export SSH
+
+
+Note: Obviously you could use the PPID_NAME check to set your EDITOR/VISUAL variable directly based on whether or not you are connecting via ssh:
+
+		PPID_NAME=$(/bin/ps -cp ${PPID} | awk -F' ' '/sshd/{print $NF}')
+
+		if [ "$PPID_NAME" = "sshd" ]
+		then
+			SSH=yes
+			EDITOR='/usr/bin/nano'
+		else
+			SSH=no
+			EDITOR='/usr/local/bin/bbwait'
+		fi
+		export SSH
+
+but if you have added
+
+		Defaults 	editor=/usr/local/bin/bbwait
+
+to /etc/sudoers then `bbwait` will be used regardless of your EDITOR setting.
+
+If `bbwait` sees that SSH is set to `yes` it will look for other, command-line based editors. By default it will look for `nano`, then `pico`, and then (*shudder*) `vi`. You can adjust what it uses by editing the choices under
+
+		if [ "$SSH" = "yes" ]
+		then
+
+in the `bbwait` script. The advantage to doing it this way is that you can keep `bbwait` as your \$EDITOR and it will do the right thing.
+
+Note: if you want that SSH switch to work for `visudo` you need to add this line to /etc/sudoers 
+
+		Defaults	env_keep += "SSH"
+
+Otherwise it will use BBEdit even when you are logged in via ssh.
+
+
+## If you don't use BBEdit… ##
 
 Although this is written for BBEdit, it could easily be adjusted for [TextWrangler]. In fact, it would probably work with any other GUI *text editor* by replacing the `bbedit` command with your preferred editor's command-line tool. If your app does not provide one, you could try something like this:
 
